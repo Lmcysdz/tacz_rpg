@@ -100,9 +100,6 @@ dependencies {
 
     // TAA (Tacz Attribute Add) — extra gun attributes backing the Division-style system
     implementation fg.deobf("local:taa:1.3.7")
-
-    // Cloth Config API — in-game configuration screens
-    implementation fg.deobf("me.shedaniel.cloth:cloth-config-forge:11.1.106")
 }
 
 // Expands declared replace properties in the specified resource targets.
