@@ -24,6 +24,9 @@ run
 # 本地素材 / 参考图 / 第三方枪包（不随源码分发）
 素材
 
+# 本地开发交流文档（保留本地，不上传 GitHub）
+DESIGN.md
+
 # maven publish 输出
 mcmodsrepo
 
