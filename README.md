@@ -1,8 +1,10 @@
-# TACZ RPG — 全境封锁式枪械装备系统
+# TACZ RPG — 全境封锁枪械装备系统
 
 为 Minecraft 1.20.1 / Forge 47.4.20 / TACZ 打造的《全境封锁2》式枪械词条·校准·专精系统。基于 TACZ（Timeless and Classics Zero）与 TAA（Tacz Attribute Add）。
 
 > 📖 完整设计文档见 [DESIGN.md](DESIGN.md)
+
+## 🤖本项目全程由DeepSeek V4 Flash 开发
 
 ## ✨ 功能特色
 
@@ -59,17 +61,6 @@
   ]
 }
 ```
-
-## 🛠 开发 / 构建
-
-```bash
-# 编译
-.\gradlew.bat compileJava
-# 打包模组 jar（产物在 build/libs/）
-.\gradlew.bat build
-```
-
-> 注意：`libs/taa-1.3.7.jar` 为本地依赖（TAA 1.3.7，见 build.gradle 的 `flatDir`），已随仓库提交，缺失会导致编译失败。
 
 ## 📝 许可
 
