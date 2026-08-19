@@ -2,8 +2,6 @@
 
 为 Minecraft 1.20.1 / Forge 47.4.20 / TACZ 打造的《全境封锁》校准站的枪械词条·校准·专精系统。基于 TACZ（Timeless and Classics Zero）与 TAA（Tacz Attribute Add）。
 
-> 📖 完整设计文档见 [DESIGN.md](DESIGN.md)
-
 ## 🤖本项目全程由DeepSeek V4 Flash 开发
 
 ## ✨ 功能特色
