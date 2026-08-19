@@ -71,6 +71,10 @@
 
 > 注意：`libs/taa-1.3.7.jar` 为本地依赖（TAA 1.3.7，见 build.gradle 的 `flatDir`），已随仓库提交，缺失会导致编译失败。
 
+## 🤖 AI 开发说明
+
+本项目使用 AI（deepseek-V4 Flash 驱动）辅助开发完成。
+
 ## 📝 许可
 
 MIT
