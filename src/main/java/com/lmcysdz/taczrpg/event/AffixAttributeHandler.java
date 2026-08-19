@@ -1,0 +1,73 @@
+package com.lmcysdz.taczrpg.event;
+
+import com.lmcysdz.taczrpg.api.affix.AffixSystem;
+import com.lmcysdz.taczrpg.api.affix.AffixType;
+import com.tacz.guns.api.item.IGun;
+import com.tacz.guns.api.item.attachment.AttachmentType;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.event.ItemAttributeModifierEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.registries.ForgeRegistries;
+
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
+
+/**
+ * 把枪械本体与已挂载配件的词条，映射为 TAA 属性修饰器。
+ *
+ * <p>对应 KubeJS 原型 {@code Attributes_Test.js}。额外挂载专精伤害加成。</p>
+ */
+public class AffixAttributeHandler {
+
+    @SubscribeEvent
+    public static void onItemAttributeModifier(ItemAttributeModifierEvent event) {
+        ItemStack gun = event.getItemStack();
+        if (!(gun.getItem() instanceof IGun iGun)) {
+            return;
+        }
+        if (event.getSlotType() != EquipmentSlot.MAINHAND) {
+            return;
+        }
+
+        // 枪械本体词条
+        applyTagAffixes(event, gun.getOrCreateTag(), "gun");
+
+        // 各配件槽位词条
+        for (AttachmentType type : AttachmentType.values()) {
+            if (type == AttachmentType.NONE) {
+                continue;
+            }
+            // getAttachmentTag 内部已解包，直接返回配件词条 NBT（含 AttachmentId + 词条）
+            CompoundTag attachmentTag = iGun.getAttachmentTag(gun, type);
+            if (attachmentTag != null) {
+                applyTagAffixes(event, attachmentTag, "attachment_" + type.name());
+            }
+        }
+        // 专精为固定伤害（每级 +1），在 EntityHurtByGunEvent.Pre 中应用（见 ExpertiseHandler）
+    }
+
+    private static void applyTagAffixes(ItemAttributeModifierEvent event, CompoundTag tag, String slotName) {
+        for (AffixType affix : AffixSystem.AFFIX_POOL) {
+            if (!tag.contains(affix.key(), Tag.TAG_DOUBLE)) {
+                continue;
+            }
+            double value = tag.getDouble(affix.key());
+            if (value == 0d) {
+                continue;
+            }
+            Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(affix.attributeId());
+            if (attribute == null) {
+                continue;
+            }
+            UUID uuid = UUID.nameUUIDFromBytes((affix.key() + "_" + slotName).getBytes(StandardCharsets.UTF_8));
+            event.addModifier(attribute, new AttributeModifier(
+                    uuid, "tacz_rpg_" + affix.key(), value, AttributeModifier.Operation.MULTIPLY_BASE));
+        }
+    }
+}

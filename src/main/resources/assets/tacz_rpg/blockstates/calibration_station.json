@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "tacz_rpg:block/calibration_station" },
+    "facing=south": { "model": "tacz_rpg:block/calibration_station", "y": 180 },
+    "facing=west": { "model": "tacz_rpg:block/calibration_station", "y": 270 },
+    "facing=east": { "model": "tacz_rpg:block/calibration_station", "y": 90 }
+  }
+}

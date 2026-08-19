@@ -1,0 +1,36 @@
+# eclipse
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
+
+# idea
+out
+*.ipr
+*.iws
+*.iml
+.idea
+
+# gradle
+build
+.gradle
+
+# other
+eclipse
+run
+
+# 本地素材 / 参考图 / 第三方枪包（不随源码分发）
+素材
+
+# maven publish 输出
+mcmodsrepo
+
+# 开发期残留错误日志
+*.err.txt
+comp_err.txt
+gradle_err.txt
+
+# Files from Forge MDK
+forge*changelog.txt
