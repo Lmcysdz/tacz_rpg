@@ -73,4 +73,6 @@
 
 ## 📝 许可
 
-MIT
+GPL-3.0
+
+本模组的枪械模型 / 材质素材部分来自 **TAC**（Timeless and Classics，TACZ 的前身，截至 1.19 版本），遵循其 **GPL-3.0** 协议。
