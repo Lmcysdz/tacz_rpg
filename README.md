@@ -1,6 +1,8 @@
-# TACZ-校准站 — 全境封锁式枪械装备系统
+# TACZ-校准站 — 全境封锁枪械装备系统
 
-为 Minecraft 1.20.1 / Forge 47.4.20 / TACZ 打造的《全境封锁2》式枪械词条·校准·专精系统。基于 TACZ（Timeless and Classics Zero）与 TAA（Tacz Attribute Add）。
+为 Minecraft 1.20.1 / Forge 47.4.20 / TACZ 打造的《全境封锁》校准站的枪械词条·校准·专精系统。基于 TACZ（Timeless and Classics Zero）与 TAA（Tacz Attribute Add）。
+
+## 🤖本项目全程由DeepSeek V4 Flash 开发
 
 ## ✨ 功能特色
 
@@ -14,7 +16,7 @@
 - **材料体系**：基础 / 稀有 / 精英 / 传说 / 终极 五种材料
   - 各档枪分解给对应档位材料，校准 / 优化消耗对应档位材料（优化额外消耗模组数据块）
   - 终极材料仅由奇特武器分解获得，专用于奇特武器优化
-- **配件系统**（全境封锁1式）：TACZ 配件自动登记词条（最多 3 条），装上枪后其词条加成加载到枪上，分解给 1 个档位材料
+- **配件系统**：TACZ 配件自动登记词条（最多 3 条），装上枪后其词条加成加载到枪上，分解给 1 个档位材料
 - **奇特武器（Exotic）**：数据包定义，红橙色名字与「奇特词条」，行为独立（禁校准/提取、只能优化、分解给终极材料）
 - **泛枪包支持**：经 TimelessAPI 读取枪械类型，兼容任意 TACZ 第三方枪包
 - 独立创造标签页「TACZ-校准站」、击杀反馈 / 升级提示 / 专精经验条
@@ -28,7 +30,7 @@
 ## 🚀 安装步骤
 
 1. 安装 1.20.1 Forge，启动一次生成 `mods` 文件夹
-2. 把前置模组（TACZ / TAA / Cloth Config）和本模组 jar 一起放进 `mods/`
+2. 把前置模组（TACZ / TAA）和本模组 jar 一起放进 `mods/`
 3. 把 `tacz_default_gun` 枪械包整个文件夹放进 `<游戏目录>/tacz/`
 4. 启动游戏，创造模式用「TACZ-校准站」标签页获取物品
 
@@ -49,7 +51,7 @@
 ```json
 {
   "gun": "tacz:ak47",
-  "display_name": "撕裂者",
+  "display_name": "[自定义名称]",
   "exotic_affix": { "affix": "bullet_rifle", "value": 0.35 },
   "affixes": [
     { "affix": "crit_damage", "value": 0.10 },
@@ -68,10 +70,6 @@
 ```
 
 > 注意：`libs/taa-1.3.7.jar` 为本地依赖（TAA 1.3.7，见 build.gradle 的 `flatDir`），已随仓库提交，缺失会导致编译失败。
-
-## 🤖 AI 开发说明
-
-本项目使用 AI（deepseek-V4 Flash 驱动）辅助开发完成。
 
 ## 📝 许可
 
