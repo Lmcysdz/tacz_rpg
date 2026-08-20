@@ -4,7 +4,7 @@
   "item.tacz_rpg.module_item": "Module Item",
   "item.tacz_rpg.module_item.desc": "§6Used for optimization at Calibration Station",
   "container.tacz_rpg.calibration_station": "Calibration Station",
-  "itemGroup.tacz_rpg": "TACZ RPG",
+  "itemGroup.tacz_rpg": "TACZ-校准站",
   "key.tacz_rpg.open_calibration": "Open Calibration Station",
   "key.categories.tacz_rpg": "TACZ RPG",
 

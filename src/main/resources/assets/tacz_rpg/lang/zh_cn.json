@@ -4,7 +4,7 @@
   "item.tacz_rpg.module_item": "模组数据块",
   "item.tacz_rpg.module_item.desc": "§6用于校准站的词条优化操作",
   "container.tacz_rpg.calibration_station": "校准站",
-  "itemGroup.tacz_rpg": "TACZ RPG",
+  "itemGroup.tacz_rpg": "TACZ-校准站",
   "key.tacz_rpg.open_calibration": "打开校准站",
   "key.categories.tacz_rpg": "TACZ RPG",
 
