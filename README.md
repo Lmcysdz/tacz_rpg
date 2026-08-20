@@ -73,6 +73,8 @@
 
 ## 📝 许可
 
-GPL-3.0
+**代码：GPL-3.0**
 
-本模组的枪械模型 / 材质素材部分来自 **TAC**（Timeless and Classics，TACZ 的前身，截至 1.19 版本），遵循其 **GPL-3.0** 协议。
+- 本模组代码基于 TACZ（Timeless and Classics Zero）开发（TACZ 代码为 **GPL-3.0**）。
+- 校准站方块的外观复用 TACZ 的 `gun_smith_table` 模型 / 材质：**运行时引用 TACZ 自带资源，未打包、未修改**，其美术版权归 TACZ 所有（TACZ 美术为 **CC BY-NC-ND 4.0**）。
+- 本模组自带的物品图标为原创占位素材。
