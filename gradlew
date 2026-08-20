@@ -239,7 +239,7 @@ eval "set -- $(
         printf '%s' "$DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS" |
         xargs -n1 |
         sed ' s~[^-[:alnum:]+,./:=@_]~\\&~g; ' |
-        tr '' ' '
+        tr '\n' ' '
     )" '"$@"'
 
 exec "$JAVACMD" "$@"

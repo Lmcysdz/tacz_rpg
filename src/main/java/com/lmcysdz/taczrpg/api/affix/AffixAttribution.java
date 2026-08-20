@@ -76,7 +76,7 @@ public final class AffixAttribution {
      * 公开供创造标签页构建奇特武器使用。
      */
     public static boolean applyExoticAffixes(ItemStack stack, ExoticWeapon exotic, int agentLevel) {
-        stack.setHoverName(Component.literal("奇特 " + exotic.displayName())
+        stack.setHoverName(Component.translatable("exotic.tacz_rpg.name", exotic.displayName())
                 .setStyle(Style.EMPTY.withColor(TextColor.fromRgb(ExoticWeaponManager.EXOTIC_RGB))));
         CompoundTag tag = stack.getOrCreateTag();
         AffixSystem.clearAffixes(tag);

@@ -61,6 +61,7 @@ public class CalibrationStationBlock extends BaseEntityBlock {
     }
 
     @Override
+    @SuppressWarnings("deprecation") // 1.20.1 无非弃用的方块右键替代方法（useItemOn 为 1.21+）
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (!level.isClientSide) {
             return InteractionResult.sidedSuccess(false);

@@ -8,6 +8,7 @@ import com.lmcysdz.taczrpg.api.exotic.ExoticWeaponManager;
 import com.lmcysdz.taczrpg.api.resource.MaterialQuality;
 import com.lmcysdz.taczrpg.api.resource.ResourceCostSystem;
 import com.lmcysdz.taczrpg.capability.AffixLibraryCapability;
+import com.lmcysdz.taczrpg.capability.AgentLevelCapability;
 import com.lmcysdz.taczrpg.network.CalibrationActionPacket;
 import com.lmcysdz.taczrpg.network.ModNetwork;
 import com.lmcysdz.taczrpg.registry.ModItems;
@@ -50,7 +51,7 @@ public class CalibrationStationGui extends Screen {
     private static final int EXOTIC_COLOR = 0xFFFF6B4A;  // 红橙色（GUI 绘制用 ARGB）
 
     // 布局
-    private static final int TAB_H = 30, TAB_GAP = 8, TAB_W = 100;
+    private static final int TAB_H = 24, TAB_GAP = 6, TAB_W = 100;
     private static final int MARGIN_L = 14, MARGIN_R = 10, GAP = 10;
     private static final int BAR_W = 80, BAR_H = 6;
     private static final int BTN_W = 80, BTN_H = 16;
@@ -97,7 +98,7 @@ public class CalibrationStationGui extends Screen {
     }
 
     private void drawTabs(GuiGraphics g, int px, int py) {
-        String[] names = {"提取", "校准", "优化", "分解", "专精"};
+        String[] keys = {"extract", "calibrate", "optimize", "disassemble", "expertise"};
         int[] accs = {0xFF4E9BE0, 0xFFF2C14E, 0xFF2ECC71, 0xFFE74C3C, 0xFF00D5C2};
         int tx = px + tabX();
         for (int i = 0; i < 5; i++) {
@@ -106,7 +107,8 @@ public class CalibrationStationGui extends Screen {
             g.fill(tx, y, tx + 2, y + TAB_H, accs[i]);
             g.fill(tx, y, tx + TAB_W, y + 1, BORDER);
             g.fill(tx, y + TAB_H - 1, tx + TAB_W, y + TAB_H, BORDER);
-            g.drawCenteredString(font, names[i], tx + TAB_W / 2, y + (TAB_H - 8) / 2, i == tab ? TEXT : TEXT_DIM);
+            g.drawCenteredString(font, Component.translatable("gui.tacz_rpg.tab." + keys[i]),
+                    tx + TAB_W / 2, y + (TAB_H - 8) / 2, i == tab ? TEXT : TEXT_DIM);
         }
     }
 
@@ -127,14 +129,14 @@ public class CalibrationStationGui extends Screen {
     // ============ 提取页 ============
     private void drawExtract(GuiGraphics g, int cx, int py, int cw, Player p, ItemStack gun) {
         int cur = py + 44;
-        if (!(gun.getItem() instanceof IGun)) { txt(g, cx, cur, "需要手持一把枪械", TEXT_DIM); return; }
+        if (!(gun.getItem() instanceof IGun)) { txt(g, cx, cur, Component.translatable("gui.tacz_rpg.need_gun"), TEXT_DIM); return; }
         cur = gunInfo(g, cx, cw, cur, gun);
-        if (ExoticWeaponManager.isExotic(gun)) { txt(g, cx, cur, "奇特武器无法提取词条", EXOTIC_COLOR); return; }
-        txt(g, cx, cur, "—— 提取词条 ——", TEXT_DIM); cur += 18;
+        if (ExoticWeaponManager.isExotic(gun)) { txt(g, cx, cur, Component.translatable("gui.tacz_rpg.extract_exotic_denied"), EXOTIC_COLOR); return; }
+        txt(g, cx, cur, Component.translatable("gui.tacz_rpg.section.extract"), TEXT_DIM); cur += 15;
 
         List<String> ks = AffixSystem.getAttrKeys(gun.getOrCreateTag());
         int cs = gun.getOrCreateTag().getInt(AffixSystem.CALIBRATED_SLOT_TAG);
-        if (ks.isEmpty()) { txt(g, cx, cur, "该枪尚未拥有词条", TEXT_DIM); return; }
+        if (ks.isEmpty()) { txt(g, cx, cur, Component.translatable("gui.tacz_rpg.no_affixes"), TEXT_DIM); return; }
 
         for (int i = 0; i < ks.size(); i++) {
             String k = ks.get(i);
@@ -142,27 +144,27 @@ public class CalibrationStationGui extends Screen {
             if (t == null) continue;
             double v = gun.getOrCreateTag().getDouble(k);
             boolean lk = (cs == i);
-            Component lb = Component.literal("◈ ").append(Component.translatable(t.translationKey())).append(fmt(v)).withStyle(t.category().chatColor());
-            if (lk) lb = lb.copy().append(Component.literal("  [锁定]").withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
+            Component lb = Component.literal("◈ ").append(Component.translatable(t.translationKey())).append(valueSuffix(t, v)).withStyle(t.category().chatColor());
+            if (lk) lb = lb.copy().append(Component.translatable("gui.tacz_rpg.locked").withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
             txt(g, cx, cur, lb, t.category().color());
-            bar(g, cx + cw - BAR_W - BTN_W - 4, cur + 4, BAR_W, BAR_H, (float)(Math.abs(v) / AffixSystem.MAX_AFFIX_VALUE), t.category().color());
+            bar(g, cx + cw - BAR_W - BTN_W - 4, cur + 4, BAR_W, BAR_H, (float)(Math.abs(v) / AffixSystem.rangeFor(t, 3)[1]), t.category().color());
             int fi = i;
             btn(g, cx + cw - BTN_W, cur - 2, BTN_W, BTN_H,
-                    Component.literal("提取"),
+                    Component.translatable("gui.tacz_rpg.tab.extract"),
                     () -> ModNetwork.sendToServer(new CalibrationActionPacket(CalibrationActionPacket.Action.EXTRACT, t.key())),
                     !lk, t.category().color());
-            cur += 22;
+            cur += 16;
         }
         cur += 4;
-        txt(g, cx, cur, "§7提取无消耗，提取后枪械永久销毁", TEXT_DIM);
+        txt(g, cx, cur, Component.translatable("gui.tacz_rpg.extract_no_cost"), TEXT_DIM);
     }
 
     // ============ 校准页 ============
     private void drawCalibrate(GuiGraphics g, int cx, int py, int cw, Player p, ItemStack gun) {
         int cur = py + 44;
-        if (!(gun.getItem() instanceof IGun)) { txt(g, cx, cur, "需要手持一把枪械", TEXT_DIM); return; }
+        if (!(gun.getItem() instanceof IGun)) { txt(g, cx, cur, Component.translatable("gui.tacz_rpg.need_gun"), TEXT_DIM); return; }
         cur = gunInfo(g, cx, cw, cur, gun);
-        if (ExoticWeaponManager.isExotic(gun)) { txt(g, cx, cur, "奇特武器无法校准（仅可优化）", EXOTIC_COLOR); return; }
+        if (ExoticWeaponManager.isExotic(gun)) { txt(g, cx, cur, Component.translatable("gui.tacz_rpg.calibrate_exotic_denied"), EXOTIC_COLOR); return; }
 
         var tag = gun.getOrCreateTag();
         List<String> ks = AffixSystem.getAttrKeys(tag);
@@ -177,15 +179,15 @@ public class CalibrationStationGui extends Screen {
         else if (selectedSlot >= ks.size()) selectedSlot = -1;
 
         int panelBottom = py + ph();
-        int bottom = panelBottom - 36;
+        int bottom = panelBottom - 20;
 
         // ① 枪械当前词条（点击选择要替换的位）
-        txt(g, cx, cur, "—— 枪械词条 ——", TEXT_DIM); cur += 16;
+        txt(g, cx, cur, Component.translatable("gui.tacz_rpg.section.gun_affixes"), TEXT_DIM); cur += 12;
         if (ks.isEmpty()) {
-            txt(g, cx, cur, "该枪尚未拥有词条", TEXT_DIM); cur += 16;
+            txt(g, cx, cur, Component.translatable("gui.tacz_rpg.no_affixes"), TEXT_DIM); cur += 12;
         } else {
             for (int i = 0; i < ks.size(); i++) {
-                if (cur + 18 > bottom) break;
+                if (cur + 15 > bottom) break;
                 String k = ks.get(i);
                 AffixType t = AffixType.byKey(k);
                 boolean lockedOut = (cs != -1 && cs != i); // 已锁定其他位则本槽不可选
@@ -194,33 +196,35 @@ public class CalibrationStationGui extends Screen {
                     lb = Component.literal("◈ " + k).withStyle(net.minecraft.ChatFormatting.GRAY);
                 } else {
                     double v = tag.getDouble(k);
-                    lb = Component.literal("◈ ").append(Component.translatable(t.translationKey())).append(fmt(v)).withStyle(t.category().chatColor());
+                    lb = Component.literal("◈ ").append(Component.translatable(t.translationKey())).append(valueSuffix(t, v)).withStyle(t.category().chatColor());
                 }
                 boolean sel = (selectedSlot == i);
                 int fi = i;
-                selRow(g, cx, cur, cw, 16, lb, sel, !lockedOut, () -> selectedSlot = fi, t == null ? TEXT_DIM : t.category().color());
-                cur += 18;
+                selRow(g, cx, cur, cw, 12, lb, sel, !lockedOut, () -> selectedSlot = fi, t == null ? TEXT_DIM : t.category().color());
+                cur += 15;
             }
         }
         cur += 2;
 
         // ② 材料信息（按枪械档位材料）
-        txt(g, cx, cur, "—— 词条库 ——", TEXT_DIM); cur += 16;
+        txt(g, cx, cur, Component.translatable("gui.tacz_rpg.section.library"), TEXT_DIM); cur += 12;
         Item tierMat = ResourceCostSystem.getTierMaterial(gun);
         String tierMatName = Component.translatable(tierMat.getDescriptionId()).getString();
         g.renderItem(new ItemStack(tierMat, cost), cx, cur);
         g.renderItemDecorations(font, new ItemStack(tierMat, cost), cx, cur);
-        txt(g, cx + 20, cur + 2, "消耗: " + cost + " " + tierMatName, TEXT_DIM);
-        txt(g, cx + 20, cur + 12, "背包: " + matCnt + (selectedSlot >= 0 ? "  |  已选槽位 " + (selectedSlot + 1) : ""), TEXT_DIM);
-        cur += 22;
+        txt(g, cx + 20, cur + 2, Component.translatable("gui.tacz_rpg.cost", cost, tierMatName), TEXT_DIM);
+        Component inv = Component.translatable("gui.tacz_rpg.inventory", matCnt);
+        if (selectedSlot >= 0) inv = inv.copy().append(Component.translatable("gui.tacz_rpg.selected_slot", selectedSlot + 1));
+        txt(g, cx + 20, cur + 12, inv, TEXT_DIM);
+        cur += 20;
 
         Map<String, Float> lib = AffixLibraryCapability.get(p)
                 .map(l -> (Map<String, Float>) l.getAll())
                 .orElse(java.util.Collections.emptyMap());
-        if (lib.isEmpty()) { txt(g, cx, cur, "词条库为空，请先提取", TEXT_DIM); return; }
+        if (lib.isEmpty()) { txt(g, cx, cur, Component.translatable("gui.tacz_rpg.library_empty"), TEXT_DIM); return; }
 
         // ③ 词条库（滚轮滚动，仅显示同分类/全部分类）
-        int visible = Math.max(1, (bottom - cur) / 20);
+        int visible = Math.max(1, (bottom - cur) / 16);
         int maxScroll = Math.max(0, lib.size() - visible);
         if (calibScroll > maxScroll) calibScroll = maxScroll;
         if (calibScroll < 0) calibScroll = 0;
@@ -228,28 +232,28 @@ public class CalibrationStationGui extends Screen {
         int idx = 0;
         for (var e : lib.entrySet()) {
             if (idx++ < calibScroll) continue;
-            if (cur + 20 > bottom) break;
+            if (cur + 16 > bottom) break;
             AffixType t = AffixType.byKey(e.getKey());
             if (t == null) continue;
             float v = e.getValue();
-            Component lb = Component.literal("▸ ").append(Component.translatable(t.translationKey())).append(fmt(v)).withStyle(t.category().chatColor());
+            Component lb = Component.literal("▸ ").append(Component.translatable(t.translationKey())).append(valueSuffix(t, v)).withStyle(t.category().chatColor());
             txt(g, cx, cur, lb, t.category().color());
             String fk = e.getKey();
             btn(g, cx + cw - BTN_W, cur - 2, BTN_W, BTN_H,
-                    Component.literal("替换"),
+                    Component.translatable("gui.tacz_rpg.replace"),
                     () -> ModNetwork.sendToServer(new CalibrationActionPacket(CalibrationActionPacket.Action.CALIBRATE, fk, selectedSlot)),
                     selectedSlot >= 0 && matCnt >= cost, t.category().color());
-            cur += 20;
+            cur += 16;
         }
         if (calibScroll > 0 || calibScroll + visible < lib.size()) {
-            txt(g, cx, panelBottom - 16, "§7滚轮滚动查看更多词条", TEXT_DIM);
+            txt(g, cx, panelBottom - 14, Component.translatable("gui.tacz_rpg.scroll_hint"), TEXT_DIM);
         }
     }
 
     // ============ 优化页 ============
     private void drawOptimize(GuiGraphics g, int cx, int py, int cw, Player p, ItemStack gun) {
         int cur = py + 44;
-        if (!(gun.getItem() instanceof IGun)) { txt(g, cx, cur, "需要手持一把枪械", TEXT_DIM); return; }
+        if (!(gun.getItem() instanceof IGun)) { txt(g, cx, cur, Component.translatable("gui.tacz_rpg.need_gun"), TEXT_DIM); return; }
         cur = gunInfo(g, cx, cw, cur, gun);
 
         ExoticWeapon exotic = ExoticWeaponManager.getExotic(gun);
@@ -258,17 +262,17 @@ public class CalibrationStationGui extends Screen {
         Item tierMat = ResourceCostSystem.getTierMaterial(gun);
         int tierMatCnt = ResourceCostSystem.countItem(p, tierMat);
         if (exotic != null) {
-            txt(g, cx, cur, "优化消耗（奇特）：" + ResourceCostSystem.EXOTIC_OPTIMIZE_ULTIMATE + " 终极材料 + " + ResourceCostSystem.EXOTIC_OPTIMIZE_MODULE + " 模组数据块", TEXT_DIM); cur += 12;
-            txt(g, cx, cur, "背包: 终极" + ultMat + " + 模组" + modMat, TEXT_DIM); cur += 12;
+            txt(g, cx, cur, Component.translatable("gui.tacz_rpg.optimize_cost_exotic", ResourceCostSystem.EXOTIC_OPTIMIZE_ULTIMATE, ResourceCostSystem.EXOTIC_OPTIMIZE_MODULE), TEXT_DIM); cur += 10;
+            txt(g, cx, cur, Component.translatable("gui.tacz_rpg.inventory_exotic", ultMat, modMat), TEXT_DIM); cur += 10;
         } else {
             String tierMatName = Component.translatable(tierMat.getDescriptionId()).getString();
-            txt(g, cx, cur, "优化消耗：" + ResourceCostSystem.OPTIMIZE_TIER_MATERIAL + " " + tierMatName + " + " + ResourceCostSystem.OPTIMIZE_MODULE + " 模组数据块", TEXT_DIM); cur += 12;
-            txt(g, cx, cur, "背包: " + tierMatCnt + " + 模组" + modMat, TEXT_DIM); cur += 12;
+            txt(g, cx, cur, Component.translatable("gui.tacz_rpg.optimize_cost", ResourceCostSystem.OPTIMIZE_TIER_MATERIAL, tierMatName, ResourceCostSystem.OPTIMIZE_MODULE), TEXT_DIM); cur += 10;
+            txt(g, cx, cur, Component.translatable("gui.tacz_rpg.inventory_normal", tierMatCnt, modMat), TEXT_DIM); cur += 10;
         }
 
         var tag = gun.getOrCreateTag();
         List<String> ks = AffixSystem.getAttrKeys(tag);
-        if (ks.isEmpty()) { txt(g, cx, cur, "该枪尚未拥有词条", TEXT_DIM); return; }
+        if (ks.isEmpty()) { txt(g, cx, cur, Component.translatable("gui.tacz_rpg.no_affixes"), TEXT_DIM); return; }
         int cs = tag.getInt(AffixSystem.CALIBRATED_SLOT_TAG);
 
         Map<String, Float> lib = AffixLibraryCapability.get(p)
@@ -286,15 +290,21 @@ public class CalibrationStationGui extends Screen {
             boolean isExoticAffix = exotic != null && k.equals(exotic.exoticAffix().key());
             Component lb;
             if (isExoticAffix) {
-                lb = Component.literal("奇特词条：").append(Component.translatable(t.translationKey())).append(fmt(v))
+                lb = Component.translatable("gui.tacz_rpg.exotic_affix_prefix").append(Component.translatable(t.translationKey())).append(valueSuffix(t, v))
                         .setStyle(Style.EMPTY.withColor(TextColor.fromRgb(EXOTIC_RGB)));
             } else {
-                lb = Component.literal("◈ ").append(Component.translatable(t.translationKey())).append(fmt(v)).withStyle(t.category().chatColor());
-                if (lk) lb = lb.copy().append(Component.literal("  [锁定]").withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
+                lb = Component.literal("◈ ").append(Component.translatable(t.translationKey())).append(valueSuffix(t, v)).withStyle(t.category().chatColor());
+                if (lk) lb = lb.copy().append(Component.translatable("gui.tacz_rpg.locked").withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
                 if (cap != null) {
-                    lb = lb.copy().append(Component.literal("  目标 " + Math.round(cap * 100) + "%").withStyle(net.minecraft.ChatFormatting.GRAY));
+                    if (AffixSystem.isFlat(t)) {
+                        lb = lb.copy().append(Component.translatable("gui.tacz_rpg.target_flat"))
+                                .append(Component.literal(" ")).append(AffixSystem.flatValueComponent(t, cap))
+                                .withStyle(net.minecraft.ChatFormatting.GRAY);
+                    } else {
+                        lb = lb.copy().append(Component.translatable("gui.tacz_rpg.target", Math.round(cap * 100)).withStyle(net.minecraft.ChatFormatting.GRAY));
+                    }
                 } else {
-                    lb = lb.copy().append(Component.literal("  库无记录").withStyle(net.minecraft.ChatFormatting.DARK_RED));
+                    lb = lb.copy().append(Component.translatable("gui.tacz_rpg.no_record").withStyle(net.minecraft.ChatFormatting.DARK_RED));
                 }
             }
             txt(g, cx, cur, lb, isExoticAffix ? EXOTIC_COLOR : t.category().color());
@@ -306,10 +316,10 @@ public class CalibrationStationGui extends Screen {
                             ? (ultMat >= ResourceCostSystem.EXOTIC_OPTIMIZE_ULTIMATE && modMat >= ResourceCostSystem.EXOTIC_OPTIMIZE_MODULE)
                             : (tierMatCnt >= ResourceCostSystem.OPTIMIZE_TIER_MATERIAL && modMat >= ResourceCostSystem.OPTIMIZE_MODULE));
             btn(g, cx + cw - BTN_W, cur - 2, BTN_W, BTN_H,
-                    Component.literal("优化"),
+                    Component.translatable("gui.tacz_rpg.tab.optimize"),
                     () -> ModNetwork.sendToServer(new CalibrationActionPacket(CalibrationActionPacket.Action.OPTIMIZE, t.key())),
                     canOpt, t.category().color());
-            cur += 22;
+            cur += 16;
         }
     }
 
@@ -318,7 +328,7 @@ public class CalibrationStationGui extends Screen {
         int cur = py + 44;
         boolean isGun = gun.getItem() instanceof IGun;
         boolean isAttachment = gun.getItem() instanceof IAttachment;
-        if (!isGun && !isAttachment) { txt(g, cx, cur, "需要手持一把枪械或配件", TEXT_DIM); return; }
+        if (!isGun && !isAttachment) { txt(g, cx, cur, Component.translatable("gui.tacz_rpg.need_gun_or_attachment"), TEXT_DIM); return; }
         cur = gunInfo(g, cx, cw, cur, gun);
 
         List<String> ks = AffixSystem.getAttrKeys(gun.getOrCreateTag());
@@ -326,10 +336,10 @@ public class CalibrationStationGui extends Screen {
 
         // 配件：分解给 1 个档位材料，无专精/校准/提取
         if (isAttachment) {
-            txt(g, cx, cur, "配件分解：获得 1 个档位材料", TEXT_DIM); cur += 16;
-            txt(g, cx, cur, "§7配件无专精 / 校准 / 提取", TEXT_DIM); cur += 16;
+            txt(g, cx, cur, Component.translatable("gui.tacz_rpg.attachment_disassemble"), TEXT_DIM); cur += 16;
+            txt(g, cx, cur, Component.translatable("gui.tacz_rpg.attachment_no_extra"), TEXT_DIM); cur += 16;
             btn(g, cx + cw / 2 - 50, cur, 100, 20,
-                    Component.literal("分解配件"),
+                    Component.translatable("gui.tacz_rpg.disassemble_attachment_btn"),
                     () -> ModNetwork.sendToServer(new CalibrationActionPacket(CalibrationActionPacket.Action.DISASSEMBLE, "")),
                     can, BORDER);
             return;
@@ -338,12 +348,12 @@ public class CalibrationStationGui extends Screen {
         int el = gun.getOrCreateTag().getInt(AffixSystem.EXPERTISE_LEVEL_TAG);
         int pc = ResourceCostSystem.getDisassembleCount(el);
 
-        txt(g, cx, cur, "专精等级: " + el + " / " + AffixOperation.MAX_EXPERTISE_LEVEL, TEXT); cur += 16;
-        txt(g, cx, cur, "分解获得: " + pc + " 个档位材料", TEXT_DIM); cur += 16;
-        txt(g, cx, cur, "§7分解后词条不会入库", TEXT_DIM); cur += 16;
+        txt(g, cx, cur, Component.translatable("gui.tacz_rpg.expertise_level", el, AffixOperation.MAX_EXPERTISE_LEVEL), TEXT); cur += 16;
+        txt(g, cx, cur, Component.translatable("gui.tacz_rpg.disassemble_yield", pc), TEXT_DIM); cur += 16;
+        txt(g, cx, cur, Component.translatable("gui.tacz_rpg.disassemble_no_library"), TEXT_DIM); cur += 16;
 
         btn(g, cx + cw / 2 - 50, cur, 100, 20,
-                Component.literal("分解武器"),
+                Component.translatable("gui.tacz_rpg.disassemble_gun_btn"),
                 () -> ModNetwork.sendToServer(new CalibrationActionPacket(CalibrationActionPacket.Action.DISASSEMBLE, "")),
                 can, BORDER);
     }
@@ -351,17 +361,33 @@ public class CalibrationStationGui extends Screen {
     // ============ 专精页 ============
     private void drawExpertise(GuiGraphics g, int cx, int py, int cw, Player p, ItemStack gun) {
         int cur = py + 44;
-        if (!(gun.getItem() instanceof IGun)) { txt(g, cx, cur, "需要手持一把枪械", TEXT_DIM); return; }
+        if (!(gun.getItem() instanceof IGun)) { txt(g, cx, cur, Component.translatable("gui.tacz_rpg.need_gun"), TEXT_DIM); return; }
         cur = gunInfo(g, cx, cw, cur, gun);
 
         int lv = AffixOperation.getExpertiseLevel(gun);
         int exp = gun.getOrCreateTag().getInt(AffixSystem.EXPERTISE_EXP_TAG);
-        txt(g, cx, cur, "专精等级: " + lv + " / " + AffixOperation.MAX_EXPERTISE_LEVEL, TEXT); cur += 20;
-        txt(g, cx, cur, "经验: " + exp + " / " + AffixOperation.EXP_TO_LEVEL, TEXT_DIM); cur += 14;
+        txt(g, cx, cur, Component.translatable("gui.tacz_rpg.expertise_level", lv, AffixOperation.MAX_EXPERTISE_LEVEL), TEXT); cur += 20;
+        txt(g, cx, cur, Component.translatable("gui.tacz_rpg.expertise_exp", exp, AffixOperation.EXP_TO_LEVEL), TEXT_DIM); cur += 14;
         bar(g, cx, cur, cw, BAR_H, (float) exp / AffixOperation.EXP_TO_LEVEL, BAR_FILL); cur += 16;
 
-        txt(g, cx, cur, "§7击杀任意生物获得专精经验（含奇特武器）", TEXT_DIM); cur += 16;
-        txt(g, cx, cur, "§7每级 +1 固定伤害，上限 +30", TEXT_DIM);
+        // 特工等级进度（玩家实时，客户端同步）
+        var agentOpt = AgentLevelCapability.get(p);
+        if (agentOpt.isPresent()) {
+            var agent = agentOpt.get();
+            int al = agent.getLevel();
+            int ae = agent.getExp();
+            int at = agent.getExpToNextLevel();
+            cur += 4;
+            if (at <= 0) {
+                txt(g, cx, cur, Component.translatable("gui.tacz_rpg.agent_progress_max", al), TEXT); cur += 14;
+            } else {
+                txt(g, cx, cur, Component.translatable("gui.tacz_rpg.agent_progress", al, ae, at), TEXT); cur += 14;
+                bar(g, cx, cur, cw, BAR_H, (float) ae / at, BAR_FILL); cur += 16;
+            }
+        }
+
+        txt(g, cx, cur, Component.translatable("gui.tacz_rpg.expertise_hint_1"), TEXT_DIM); cur += 16;
+        txt(g, cx, cur, Component.translatable("gui.tacz_rpg.expertise_hint_2"), TEXT_DIM);
     }
 
     // ============ 辅助方法 ============
@@ -369,18 +395,18 @@ public class CalibrationStationGui extends Screen {
     private int gunInfo(GuiGraphics g, int cx, int cw, int cur, ItemStack gun) {
         if (ExoticWeaponManager.isExotic(gun)) {
             ExoticWeapon exotic = ExoticWeaponManager.getExotic(gun);
-            txt(g, cx, cur, "奇特 " + exotic.displayName(), EXOTIC_COLOR);
+            txt(g, cx, cur, Component.translatable("exotic.tacz_rpg.name", exotic.displayName()), EXOTIC_COLOR);
         } else {
             // 枪名按品质档着色（基础绿 / 稀有蓝 / 精英紫 / 传说金）
             String rc = AffixSystem.getRankForLevel(gun.getOrCreateTag().getInt(AffixSystem.LEVEL_TAG)).color();
             net.minecraft.ChatFormatting cf = net.minecraft.ChatFormatting.getByCode(rc.charAt(1));
             txt(g, cx, cur, gun.getHoverName().copy().withStyle(cf), TEXT);
         }
-        cur += 16;
+        cur += 12;
         int lv = AffixOperation.getExpertiseLevel(gun);
         int at = AffixSystem.getAttrKeys(gun.getOrCreateTag()).size();
         txt(g, cx, cur, Component.translatable("gui.tacz_rpg.gun_info", String.valueOf(at), String.valueOf(lv)), TEXT_DIM);
-        cur += 22;
+        cur += 14;
         g.fill(cx, cur - 6, cx + cw, cur - 5, 0x334E9BE0);
         return cur;
     }
@@ -410,7 +436,7 @@ public class CalibrationStationGui extends Screen {
         }
         txt(g, x, y + (h - 8) / 2, label, enabled ? color : TEXT_DIM);
         if (selected) {
-            txt(g, x + w - 40, y + (h - 8) / 2, "◀ 已选", TEXT);
+            txt(g, x + w - 40, y + (h - 8) / 2, Component.translatable("gui.tacz_rpg.selected"), TEXT);
         }
         btns.add(new Btn(x, y, w, h, onClick, enabled));
     }
@@ -464,5 +490,13 @@ public class CalibrationStationGui extends Screen {
     private static String fmt(double v) {
         int pct = (int) Math.round(Math.abs(v) * 100);
         return " " + (v < 0 ? "-" : "+") + pct + "%";
+    }
+
+    /** 词条数值片段：百分比 ±X%；固定值（弹容/弹丸）+N 发/颗 */
+    private static Component valueSuffix(AffixType type, double v) {
+        if (AffixSystem.isFlat(type)) {
+            return Component.literal(" ").append(AffixSystem.flatValueComponent(type, v));
+        }
+        return Component.literal(fmt(v));
     }
 }

@@ -88,13 +88,19 @@ public final class AffixOperation {
         }
 
         double current = gunTag.getDouble(type.key());
-        AffixRank rank = AffixSystem.getRankForLevel(gunTag.getInt(AffixSystem.LEVEL_TAG));
-        double maxValue = rank.maxValue();
-        double minValue = rank.minValue();
+        int ri = AffixSystem.getRankIndex(gunTag.getInt(AffixSystem.LEVEL_TAG));
+        float[] range = AffixSystem.rangeFor(type, ri);
+        double maxValue = range[1];
+        double minValue = range[0];
 
         double abs = Math.abs(current);
         if (abs >= maxValue) {
             return 3;
+        }
+        // 固定值词条（弹容/弹丸）：每次优化 +1 发/颗（整数）
+        if (AffixSystem.isFlat(type)) {
+            gunTag.putDouble(type.key(), (double) Math.round(abs + 1.0));
+            return 0;
         }
         // 每次优化提升一格（10 步从 min 到 max）
         double step = (maxValue - minValue) / 10.0;
@@ -110,8 +116,10 @@ public final class AffixOperation {
     public static final int EXP_PER_KILL = 1;
     /** 每级专精所需的经验（20 杀/级，击杀任意生物） */
     public static final int EXP_TO_LEVEL = 20;
-    /** 专精上限（每级 +1 固定伤害，最高 +30，见 ExpertiseHandler 的固定伤害应用） */
+    /** 专精上限 */
     public static final int MAX_EXPERTISE_LEVEL = 30;
+    /** 每级专精固定伤害（每级 +2，上限 +60，见 ExpertiseHandler 的固定伤害应用） */
+    public static final int EXPERTISE_DAMAGE_PER_LEVEL = 2;
 
     /**
      * 给枪械增加专精经验，满则升级。

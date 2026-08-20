@@ -13,7 +13,7 @@ public final class ModNetwork {
 
     private static final String PROTOCOL_VERSION = "1";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
-            ResourceLocation.of("tacz_rpg", ':'),
+            ResourceLocation.fromNamespaceAndPath("tacz_rpg", "main"),
             () -> PROTOCOL_VERSION,
             PROTOCOL_VERSION::equals,
             PROTOCOL_VERSION::equals
@@ -33,6 +33,9 @@ public final class ModNetwork {
         CHANNEL.registerMessage(id++, SyncAffixLibraryPacket.class,
                 SyncAffixLibraryPacket::encode, SyncAffixLibraryPacket::decode,
                 SyncAffixLibraryPacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        CHANNEL.registerMessage(id++, SyncAgentLevelPacket.class,
+                SyncAgentLevelPacket::encode, SyncAgentLevelPacket::decode,
+                SyncAgentLevelPacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
     }
 
     public static void sendToServer(Object packet) {
@@ -44,6 +47,10 @@ public final class ModNetwork {
     }
 
     public static void sendToPlayer(ServerPlayer player, SyncAffixLibraryPacket packet) {
+        CHANNEL.sendTo(packet, player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
+    }
+
+    public static void sendToPlayer(ServerPlayer player, SyncAgentLevelPacket packet) {
         CHANNEL.sendTo(packet, player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
     }
 }

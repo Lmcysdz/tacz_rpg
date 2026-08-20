@@ -27,6 +27,12 @@ public class AgentLevelImpl implements AgentLevel, ICapabilitySerializable<Compo
     public void setExp(int exp) { this.exp = exp; }
 
     @Override
+    public void setFromSync(int level, int exp) {
+        this.level = Math.min(level, MAX_LEVEL);
+        this.exp = Math.max(0, exp);
+    }
+
+    @Override
     public int getExp() { return exp; }
 
     @Override

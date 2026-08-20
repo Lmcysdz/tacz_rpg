@@ -36,14 +36,15 @@ public class ExpertiseHandler {
         // 枪械专精经验（任何生物击杀都算，不限敌对，含奇特武器）
         boolean leveledUp = AffixOperation.addExpertiseExp(held, AffixOperation.EXP_PER_KILL);
 
-        // 特工等级经验（每击杀 +1）
+        // 特工等级经验（每击杀 +1），并同步给客户端显示进度
         AgentLevelCapability.get(player).ifPresent(agent -> agent.addExp(1));
+        AgentLevelCapability.syncToClient(player);
 
         // 击杀反馈（未满级才提示）
         int lv = AffixOperation.getExpertiseLevel(held);
         if (lv < AffixOperation.MAX_EXPERTISE_LEVEL) {
             int exp = held.getOrCreateTag().getInt(AffixSystem.EXPERTISE_EXP_TAG);
-            player.displayClientMessage(Component.literal("§7专精经验 +1（Lv " + lv + " · " + exp + "/" + AffixOperation.EXP_TO_LEVEL + "）"), true);
+            player.displayClientMessage(Component.translatable("message.tacz_rpg.expertise_exp_gain", lv, exp, AffixOperation.EXP_TO_LEVEL), true);
         }
         if (leveledUp) {
             player.displayClientMessage(Component.translatable("message.tacz_rpg.expertise_level_up"), true);
@@ -51,7 +52,7 @@ public class ExpertiseHandler {
     }
 
     /**
-     * 专精固定伤害：每级 +1 平伤（上限 +30），枪击命中时叠加到基础伤害。
+     * 专精固定伤害：每级 +2 平伤（上限 +60），枪击命中时叠加到基础伤害。
      * 任意枪械（含奇特）都有专精，专精为固定数值而非百分比。
      */
     @SubscribeEvent
@@ -69,7 +70,7 @@ public class ExpertiseHandler {
         }
         int lv = AffixOperation.getExpertiseLevel(held);
         if (lv > 0) {
-            event.setBaseAmount(event.getBaseAmount() + lv);
+            event.setBaseAmount(event.getBaseAmount() + lv * AffixOperation.EXPERTISE_DAMAGE_PER_LEVEL);
         }
     }
 }

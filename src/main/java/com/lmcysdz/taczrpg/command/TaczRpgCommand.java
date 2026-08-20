@@ -80,6 +80,7 @@ public class TaczRpgCommand {
             }
         });
         player.displayClientMessage(Component.translatable("message.tacz_rpg.command.level_set", level), true);
+        AgentLevelCapability.syncToClient(player);
         return 1;
     }
 

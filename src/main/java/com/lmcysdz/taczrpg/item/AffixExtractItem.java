@@ -1,10 +1,12 @@
 package com.lmcysdz.taczrpg.item;
 
+import com.lmcysdz.taczrpg.api.affix.AffixSystem;
 import com.lmcysdz.taczrpg.api.affix.AffixType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -58,10 +60,18 @@ public class AffixExtractItem extends Item {
         AffixType type = getAffixType(stack);
         if (type != null) {
             double value = getAffixValue(stack);
-            String sign = value < 0 ? "减少" : "增加";
-            int percent = (int) Math.round(Math.abs(value) * 100);
+            MutableComponent suffix;
+            if (AffixSystem.isFlat(type)) {
+                suffix = Component.literal(": ").append(AffixSystem.flatValueComponent(type, value));
+            } else {
+                int percent = (int) Math.round(Math.abs(value) * 100);
+                suffix = Component.literal(": ")
+                        .append(Component.translatable(value < 0
+                                ? "tooltip.tacz_rpg.prefix.decrease" : "tooltip.tacz_rpg.prefix.increase"))
+                        .append(Component.literal(percent + "%"));
+            }
             tooltip.add(Component.translatable(type.translationKey()).withStyle(ChatFormatting.GOLD)
-                    .append(Component.literal(": " + sign + percent + "%").withStyle(ChatFormatting.GRAY)));
+                    .append(suffix.withStyle(ChatFormatting.GRAY)));
         }
     }
 }

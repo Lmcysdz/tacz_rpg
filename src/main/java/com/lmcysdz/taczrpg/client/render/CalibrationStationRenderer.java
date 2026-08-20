@@ -22,7 +22,7 @@ import java.util.Optional;
  */
 public class CalibrationStationRenderer implements BlockEntityRenderer<CalibrationStationBlockEntity> {
 
-    private static final ResourceLocation GUN_SMITH_TABLE = new ResourceLocation("tacz", "gun_smith_table");
+    private static final ResourceLocation GUN_SMITH_TABLE = ResourceLocation.fromNamespaceAndPath("tacz", "gun_smith_table");
 
     public CalibrationStationRenderer(BlockEntityRendererProvider.Context context) {
     }

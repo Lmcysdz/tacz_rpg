@@ -4,6 +4,7 @@ import com.lmcysdz.taczrpg.api.affix.AffixAttribution;
 import com.lmcysdz.taczrpg.api.affix.AffixSystem;
 import com.lmcysdz.taczrpg.capability.AgentLevel;
 import com.lmcysdz.taczrpg.capability.AgentLevelCapability;
+import com.lmcysdz.taczrpg.config.TaczRpgConfig;
 import com.tacz.guns.api.item.IGun;
 import com.tacz.guns.api.item.IAttachment;
 import net.minecraft.server.level.ServerPlayer;
@@ -59,6 +60,16 @@ public class AutoRegisterHandler {
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
             tryRegister(player, player.getInventory().getItem(i));
         }
+        // 同步特工等级到客户端（校准站/Tooltip 进度显示用）
+        AgentLevelCapability.syncToClient(player);
+    }
+
+    @SubscribeEvent
+    public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        AgentLevelCapability.syncToClient(player);
     }
 
     @SubscribeEvent
@@ -103,6 +114,10 @@ public class AutoRegisterHandler {
         boolean isGun = stack.getItem() instanceof IGun;
         boolean isAttachment = stack.getItem() instanceof IAttachment;
         if (!isGun && !isAttachment) {
+            return;
+        }
+        // 配件词条开关：关闭则配件不登记词条（config 默认开启，整合包可关）
+        if (isAttachment && !TaczRpgConfig.ENABLE_ATTACHMENT_AFFIXES.get()) {
             return;
         }
         // 已注册 → 跳过

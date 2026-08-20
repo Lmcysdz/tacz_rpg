@@ -103,7 +103,7 @@ public enum AffixType {
 
     AffixType(String key, String attributeId, boolean negative, AffixCategory category) {
         this.key = key;
-        this.attributeId = new ResourceLocation(attributeId);
+        this.attributeId = ResourceLocation.tryParse(attributeId);
         this.negative = negative;
         this.category = category;
     }

@@ -20,7 +20,7 @@ import java.util.Optional;
 
 public final class AffixLibraryCapability {
 
-    public static final ResourceLocation ID = new ResourceLocation(TaczRpg.MODID, "affix_library");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(TaczRpg.MODID, "affix_library");
     public static final Capability<AffixLibrary> CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {});
 
     private AffixLibraryCapability() {}

@@ -14,4 +14,7 @@ public interface AgentLevel {
 
     /** 当前等级升到下一级所需经验 */
     int getExpToNextLevel();
+
+    /** 客户端同步：直接设置等级与经验（由同步包调用） */
+    void setFromSync(int level, int exp);
 }

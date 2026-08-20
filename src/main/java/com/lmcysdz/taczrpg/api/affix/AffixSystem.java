@@ -4,12 +4,15 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class AffixSystem {
 
@@ -53,6 +56,75 @@ public final class AffixSystem {
     /** 类型专属伤害（按枪型匹配）进入随机结果的概率 */
     public static final float TYPE_DAMAGE_CHANCE = 0.30f;
 
+    /**
+     * 逐词条数值区间覆盖（按档位 [min,max]）。未覆盖的词条回退共享百分比区间（RANKS）。
+     * 固定值词条（弹容/弹丸）单位是「发/颗」，其余是倍率（百分比）。
+     */
+    private static final Map<AffixType, float[][]> OVERRIDE_RANGES = buildOverrideRanges();
+
+    private static Map<AffixType, float[][]> buildOverrideRanges() {
+        Map<AffixType, float[][]> m = new HashMap<>();
+        // 固定值词条（弹容/弹丸）：单位「发/颗」
+        m.put(AffixType.MAGAZINE_CAPACITY, new float[][]{{2, 3}, {4, 5}, {6, 7}, {8, 10}});
+        m.put(AffixType.BULLET_COUNT, new float[][]{{1, 1}, {1, 2}, {2, 3}, {3, 4}});
+        // 连续小基数属性：抬低下限，保证最小档也明显可感（百分比）
+        float[][] raised = {{0.10f, 0.15f}, {0.15f, 0.20f}, {0.20f, 0.25f}, {0.25f, 0.35f}};
+        m.put(AffixType.SPEED, raised);
+        m.put(AffixType.EFFECTIVE_RANGE, raised);
+        // 后坐力/瞄准/初速/换弹/重量等「感受小」属性：10%~30%，削后座更明显
+        float[][] recoilLike = {{0.10f, 0.15f}, {0.15f, 0.20f}, {0.20f, 0.25f}, {0.25f, 0.30f}};
+        m.put(AffixType.RECOIL, recoilLike);
+        m.put(AffixType.RECOIL_PITCH, recoilLike);
+        m.put(AffixType.RECOIL_YAW, recoilLike);
+        m.put(AffixType.ADS_TIME, recoilLike);
+        m.put(AffixType.AMMO_SPEED, recoilLike);
+        m.put(AffixType.RELOAD_TIME, recoilLike);
+        m.put(AffixType.WEIGHT, recoilLike);
+        return m;
+    }
+
+    /** 是否固定值词条（弹容/弹丸按「发/颗」计，不做百分比乘法，避免小基数被截断吃光） */
+    public static boolean isFlat(AffixType type) {
+        return type == AffixType.MAGAZINE_CAPACITY || type == AffixType.BULLET_COUNT;
+    }
+
+    /** 固定值词条的显示单位 lang key */
+    public static String flatUnitKey(AffixType type) {
+        if (type == AffixType.MAGAZINE_CAPACITY) {
+            return "affix.tacz_rpg.unit.rounds";
+        }
+        if (type == AffixType.BULLET_COUNT) {
+            return "affix.tacz_rpg.unit.pellets";
+        }
+        return null;
+    }
+
+    /** 词条在某档位的数值区间 [min,max]（固定值 = 发/颗，其余 = 倍率） */
+    public static float[] rangeFor(AffixType type, int rankIndex) {
+        float[][] override = OVERRIDE_RANGES.get(type);
+        if (override != null) {
+            return override[Math.max(0, Math.min(rankIndex, override.length - 1))];
+        }
+        AffixRank rank = RANKS[Math.max(0, Math.min(rankIndex, RANKS.length - 1))];
+        return new float[]{rank.minValue(), rank.maxValue()};
+    }
+
+    /** 由 AffixRank 实例反查档位下标（0~3） */
+    public static int rankIndexOf(AffixRank rank) {
+        for (int i = 0; i < RANKS.length; i++) {
+            if (RANKS[i] == rank) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    /** 固定值词条数值片段：「+5 发」，不含前导空格（调用方按需加） */
+    public static Component flatValueComponent(AffixType type, double value) {
+        return Component.literal("+" + (int) Math.round(value) + " ")
+                .append(Component.translatable(flatUnitKey(type)));
+    }
+
     private AffixSystem() {}
 
     public static int getRankIndex(int agentLevel) {
@@ -91,15 +163,17 @@ public final class AffixSystem {
 
         // 写 NBT
         for (AffixType type : selected) {
-            float value = rollValue(rank, random);
+            float value = rollValue(rank, random, type);
             if (type.isNegative()) value = -value;
-            target.putDouble(type.key(), round3(value));
+            double stored = isFlat(type) ? (double) Math.round(value) : round3(value);
+            target.putDouble(type.key(), stored);
         }
         return selected;
     }
 
-    public static float rollValue(AffixRank rank, RandomSource random) {
-        return rank.minValue() + random.nextFloat() * (rank.maxValue() - rank.minValue());
+    public static float rollValue(AffixRank rank, RandomSource random, AffixType type) {
+        float[] range = rangeFor(type, rankIndexOf(rank));
+        return range[0] + random.nextFloat() * (range[1] - range[0]);
     }
 
     public static List<String> getAttrKeys(CompoundTag tag) {

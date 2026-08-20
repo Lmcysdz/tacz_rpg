@@ -57,7 +57,10 @@ public final class ExoticWeaponManager {
             for (Map.Entry<ResourceLocation, JsonElement> entry : elements.entrySet()) {
                 try {
                     JsonObject obj = entry.getValue().getAsJsonObject();
-                    ResourceLocation gunId = new ResourceLocation(obj.get("gun").getAsString());
+                    ResourceLocation gunId = ResourceLocation.tryParse(obj.get("gun").getAsString());
+                    if (gunId == null) {
+                        continue;
+                    }
                     String displayName = obj.get("display_name").getAsString();
                     JsonObject exo = obj.getAsJsonObject("exotic_affix");
                     AffixType exoticAffix = AffixType.byKey(exo.get("affix").getAsString());
@@ -90,7 +93,7 @@ public final class ExoticWeaponManager {
     /** 奇特武器红橙色（RGB） */
     public static final int EXOTIC_RGB = 0xFF6B4A;
     /** TACZ 现代动能枪物品 ID（构建奇特武器用） */
-    private static final ResourceLocation GUN_ITEM = new ResourceLocation("tacz", "modern_kinetic_gun");
+    private static final ResourceLocation GUN_ITEM = ResourceLocation.fromNamespaceAndPath("tacz", "modern_kinetic_gun");
 
     private ExoticWeaponManager() {
     }
@@ -135,7 +138,7 @@ public final class ExoticWeaponManager {
         }
         ItemStack stack = new ItemStack(gunItem);
         accessor.setGunId(stack, exotic.gunId());
-        stack.setHoverName(Component.literal("奇特 " + exotic.displayName())
+        stack.setHoverName(Component.translatable("exotic.tacz_rpg.name", exotic.displayName())
                 .setStyle(Style.EMPTY.withColor(TextColor.fromRgb(EXOTIC_RGB))));
         AffixAttribution.applyExoticAffixes(stack, exotic, 0);
         return stack;
