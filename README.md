@@ -60,19 +60,8 @@
 }
 ```
 
-## 🛠 开发 / 构建
-
-```bash
-# 编译
-.\gradlew.bat compileJava
-# 打包模组 jar（产物在 build/libs/）
-.\gradlew.bat build
-```
-
-> 注意：`libs/taa-1.3.7.jar` 为本地依赖（TAA 1.3.7，见 build.gradle 的 `flatDir`），已随仓库提交，缺失会导致编译失败。
-
 ## 📝 许可
 
 GPL-3.0
 
-本模组的枪械模型 / 材质素材部分来自 **TAC**（Timeless and Classics，TACZ 的前身，截至 1.19 版本），遵循其 **GPL-3.0** 协议。
+本模组的枪械材质素材来自 **TAC**（Timeless and Classics），遵循其 **GPL-3.0** 协议。
