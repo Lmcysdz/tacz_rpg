@@ -60,17 +60,6 @@
 }
 ```
 
-## 🛠 开发 / 构建
-
-```bash
-# 编译
-.\gradlew.bat compileJava
-# 打包模组 jar（产物在 build/libs/）
-.\gradlew.bat build
-```
-
-> 注意：`libs/taa-1.3.7.jar` 为本地依赖（TAA 1.3.7，见 build.gradle 的 `flatDir`），已随仓库提交，缺失会导致编译失败。
-
 ## 📝 许可
 
 **代码：GPL-3.0**
